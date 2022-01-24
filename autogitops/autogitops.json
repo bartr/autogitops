@@ -1,0 +1,9 @@
+{
+  "name": "tinybench",
+  "namespace": "tiny",
+  "imageName": "ghcr.io/cse-labs/tinybench",
+  "imageTag": "latest",
+  "targets": [ "clusters", "regions", "west" ],
+  "clusters": [ "nyc3" ],
+  "regions": [ "central", "east" ]
+}

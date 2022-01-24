@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{gitops.name}}
+  namespace: {{gitops.namespace}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{gitops.name}}
+  template:
+    metadata:
+      labels:
+        app: {{gitops.name}}
+        version: beta-{{gitops.version}}
+        deploy: {{gitops.deploy}}
+    spec:
+      containers:
+        - name: app
+          image: {{gitops.imageName}}:{{gitops.imageTag}}
+          imagePullPolicy: Always
+
+          args: 
+          - -p
+          - "8080"
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
