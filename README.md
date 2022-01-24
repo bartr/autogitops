@@ -9,6 +9,26 @@
 
 `AutoGitOps` is packaged as a dotnet global tool and as a docker container
 
+## Installation
+
+```bash
+
+# clone this repo
+git clone https://github.com/bartr/autogitops
+cd autogitops
+
+# run from dotnet
+# install AutoGitOps dotnet tool
+dotnet tool install -g autogitops
+
+# display usage
+ago -h
+
+# run from Docker
+docker run ghcr.io/bartr/autogitops -h
+
+```
+
 ### Usage
 
 ```text
@@ -17,7 +37,7 @@ AutoGitOps
   Generate GitOps files for Flux
 
 Usage:
-  AutoGitOps [options]
+  ago [options]
 
 Options:
   -u, --ago-user                 GitHub User Name
@@ -34,7 +54,115 @@ Options:
 
 ```
 
-### GitOps Repo
+## Configuration
+
+> The `autogitops` folder should be in the application that you want to deploy
+
+- AutoGitOps uses a config file to control the templating engine
+  - The default location is `./autogitops/autogitops.json`
+  - The location can be changed with `--template-dir`
+  - You can add your own json fields
+
+- Json Fields
+  - name - Kubernetes app and deployment name
+  - namespace - Kubernetes namespace
+  - imageName - Docker image name
+  - imageTag - Docker image tag
+  - targets - Deployment targets
+    - These map to directories in the `output directory` (default ./deploy)
+    - You can include directories explictly (i.e. "west" in the sample)
+    - You can include a reference to json key(s) (i.e. "clusters" and "regions in the sample)
+
+### Sample `autogitops.json` file
+
+```json
+
+{
+  "name": "tinybench",
+  "namespace": "tiny",
+  "imageName": "ghcr.io/cse-labs/tinybench",
+  "imageTag": "latest",
+  "targets": [ "clusters", "regions", "west" ],
+  "clusters": [ "nyc3" ],
+  "regions": [ "central", "east" ]
+}
+
+```
+
+## Deployment Target Config
+
+- Each deployment target (directory in ./deploy) also contains a `config.json` file
+- These are values for that cluster that can be used by the templating engine
+- `environment` is required and maps to the template to use
+- You can define your own json fields
+  - `zone` and `region` are examples of custom json fields
+
+### Sample Cluster Config
+
+```json
+
+{
+  "environment": "pre-prod",
+  "zone": "az-centralus",
+  "region": "Central"
+}
+
+```
+
+## Templates
+
+- The `autogitops` folder contains template(s) that the CLI uses to generate the yaml
+- Each directory represents an `environment` that maps to the `environment` in the `Cluster config.json`
+- Each directory contains one or more yaml `templates`
+- These files can contain `substitution parameters`
+  - i.e. `{{gitops.name}}` or `{{gitops.config.zone}}`
+  - The templating engine will replace with actual values
+  - Reference the `cluster config` values with `{{gitops.config.yourKey}}`
+
+### Example template
+
+```yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{gitops.name}}
+  namespace: {{gitops.namespace}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{gitops.name}}
+  template:
+    metadata:
+      labels:
+        app: {{gitops.name}}
+        version: beta-{{gitops.version}}
+        deploy: {{gitops.deploy}}
+    spec:
+      containers:
+        - name: app
+          image: {{gitops.imageName}}:{{gitops.imageTag}}
+          imagePullPolicy: Always
+
+          args: 
+          - -p
+          - "8080"
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+```
+
+## Debugging
+
+- You can debug using local files by specifying `--no-push`
+- Default `template directory` is `./autogitops`
+- Default `output directory` is `./deploy`
+
+## GitOps Repo
 
 - AutoGitOps is a templating engine that commits changes to a GitHub repo specified with the --ago-* parameters
 - If the default GitHub user does not have access to the repo, you must specify email, user and PAT parameters
