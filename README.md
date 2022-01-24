@@ -162,6 +162,36 @@ spec:
 - Default `template directory` is `./autogitops`
 - Default `output directory` is `./deploy`
 
+### Running on local files
+
+```bash
+
+# run AutoGitOps with --no-push
+ago --no-push
+
+# check the changes to ./deploy
+git status
+
+```
+
+### Results
+
+- AutoGitOps applied the template and updated the yaml in the GitOps repo
+- If this were a real repo
+  - `commit` and `push` the git changes
+  - `GitOps` will automatically deploy the changes to each cluster
+
+```text
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        deploy/central/tiny/
+        deploy/east/tiny/
+        deploy/nyc3/tiny/
+        deploy/west/tiny/
+
+```
+
 ## GitOps Repo
 
 - AutoGitOps is a templating engine that commits changes to a GitHub repo specified with the --ago-* parameters
