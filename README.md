@@ -7,7 +7,38 @@
 
 ## Overview
 
-`AutoGitOps` is a dotnet global tool that provides a simple templating engine for generating GitOps deployments for Kubernetes
+`AutoGitOps` is packaged as a dotnet global tool and as a docker container
+
+### Usage
+
+```text
+
+AutoGitOps
+  Generate GitOps files for Flux
+
+Usage:
+  AutoGitOps [options]
+
+Options:
+  -u, --ago-user                 GitHub User Name
+  -e, --ago-email                GitHub Email
+  -p, --ago-pat                  GitHub Personal Access Token
+  -r, --ago-repo                 GitOps Repo (i.e. /bartr/auto-gitops)
+  -b, --ago-branch               GitOps branch [default: main]
+  -t, --template-dir             Template directory [default: autogitops]
+  -o, --output                   Output directory [default: deploy]
+  --no-push                      Don't push changes to repo
+  -d, --dry-run                  Validates and displays configuration
+  --version                      Show version information
+  -h, --help                     Show help and usage information
+
+```
+
+### GitOps Repo
+
+- AutoGitOps is a templating engine that commits changes to a GitHub repo specified with the --ago-* parameters
+- If the default GitHub user does not have access to the repo, you must specify email, user and PAT parameters
+- The `--no-push` option will make the changes to the repo but will not push to GitHub - this is useful for testing
 
 ## Support
 
