@@ -198,6 +198,56 @@ Untracked files:
 - If the default GitHub user does not have access to the repo, you must specify email, user and PAT parameters
 - The `--no-push` option will make the changes to the repo but will not push to GitHub - this is useful for testing
 
+```bash
+
+# run AutoGitOps with a sample repo
+ago --no-push -r /bartr/autogitops
+
+# change to the cloned repo
+cd ../run_autogitops
+
+# see what was changed
+git status
+
+```
+
+## Setting up Flux
+
+- Create a repo
+- Create the `deploy` tree
+- Add the repo and correct directory to each cluster
+  - Example
+    - https://github.com/bartr/autogitops
+    - /deploy/central
+
+## Running via CI-CD
+
+- Create and test your GitOps repo
+- Configure `autogitops` for each application
+- Run `ago` in your CI-CD
+
+```bash
+
+# install dotnet global tool
+dotnet tool install -g autogitops
+
+# run AutoGitOps
+ago -r /bartr/autogitops -b main -u bartr -e bartr@outlook.com -p 123MyPAT456
+
+```
+## Running with Docker
+
+- The key to running with docker is to mount `autogitops` as a volume
+
+```bash
+
+# run from Docker
+docker run ghcr.io/bartr/autogitops \
+-v $(pwd):/autogitops \
+ghcr.io/bartr/autogitops:latest
+
+```
+
 ## Support
 
 This project uses GitHub Issues to track bugs and feature requests. Please search the existing issues before filing new issues to avoid duplicates.  For new issues, file your bug or feature request as a new issue.
