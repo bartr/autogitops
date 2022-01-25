@@ -243,8 +243,6 @@ docker rm -f ago
 
 ## Running with Docker and local output
 
-> You can ignore the git repo errors
-
 ```bash
 
 docker run -it --rm \
