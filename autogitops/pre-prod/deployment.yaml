@@ -21,8 +21,10 @@ spec:
           imagePullPolicy: Always
 
           args: 
-          - -p
-          - "8080"
+          - --zone
+          - {{gitops.config.zone}}
+          - --region
+          - {{gitops.config.region}}
 
           ports:
             - name: http
