@@ -56,7 +56,7 @@ Options:
 
 ## Configuration
 
-> The `autogitops` folder should be in the application that you want to deploy
+> The `autogitops` folder should be in the application repo that you want to deploy
 
 - AutoGitOps uses a config file to control the templating engine
   - The default location is `./autogitops/autogitops.json`
@@ -92,7 +92,7 @@ Options:
 ## Deployment Target Config
 
 - Each deployment target (directory in ./deploy) also contains a `config.json` file
-- These are values for that cluster that can be used by the templating engine
+- These are values for one or more clusters that can be used by the templating engine
 - `environment` is required and maps to the template to use
 - You can define your own json fields
   - `zone` and `region` are examples of custom json fields
@@ -119,7 +119,7 @@ Options:
   - The templating engine will replace with actual values
   - Reference the `cluster config` values with `{{gitops.config.yourKey}}`
 
-### Example template
+### Example App Template
 
 ```yaml
 
@@ -146,8 +146,10 @@ spec:
           imagePullPolicy: Always
 
           args: 
-          - -p
-          - "8080"
+          - --zone
+          - {{gitops.config.zone}}
+          - --region
+          - {{gitops.config.region}}
 
           ports:
             - name: http
