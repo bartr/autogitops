@@ -121,6 +121,7 @@ Options:
   - i.e. `{{gitops.name}}` or `{{gitops.config.zone}}`
   - The templating engine will replace with actual values
   - Reference the `cluster config` values with `{{gitops.config.yourKey}}`
+  - The templating engine will fail if it cannot find a referenced substitution value
 
 ### Example App Template
 
