@@ -66,14 +66,15 @@ Options:
   - You can add your own json fields
 
 - Json Fields
-  - name - Kubernetes app and deployment name
-  - namespace - Kubernetes namespace
-  - imageName - Docker image name
-  - imageTag - Docker image tag
-  - targets - Deployment targets
+  - targets - Deployment targets (required)
     - These map to directories in the `output directory` (default ./deploy)
     - You can include directories explictly (i.e. "west" in the sample)
     - You can include a reference to json key(s) (i.e. "clusters" and "regions in the sample)
+  - The remaining fields are user defined
+    - name - Kubernetes app and deployment name
+    - namespace - Kubernetes namespace
+    - imageName - Docker image name
+    - imageTag - Docker image tag
 
 ### Sample `autogitops.json` file
 
