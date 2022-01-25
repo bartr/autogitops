@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
 
-> AutoGitOps is a CLI that generates GitOps deployment files for Kubernetes deployments
+> AutoGitOps is a CLI that generates GitOps deployment files for Kubernetes clusters
 
 ## Overview
 
@@ -19,19 +19,26 @@
 git clone https://github.com/bartr/autogitops
 cd autogitops
 
-# run from dotnet
 # install AutoGitOps dotnet tool
+# make sure that ~/.dotnet/tools is in your path
 dotnet tool install -g autogitops
 
-# display usage
-ago -h
-
-# run from Docker
-docker run -it ghcr.io/bartr/autogitops -h
+# pull docker container
+docker pull ghcr.io/bartr/autogitops:latest
 
 ```
 
 ### Usage
+
+```bash
+
+# display help from dotnet global tool
+ago -h
+
+# display help from Docker
+docker run -it ghcr.io/bartr/autogitops -h
+
+```
 
 ```text
 
@@ -58,23 +65,28 @@ Options:
 
 ## Configuration
 
-> The `autogitops` folder should be in the application repo that you want to deploy
+> The `autogitops` folder should be in the application repo(s)
 
 - AutoGitOps uses a config file to control the templating engine
   - The default location is `./autogitops/autogitops.json`
   - The location can be changed with `--template-dir`
-  - You can add your own json fields
 
 - Json Fields
   - targets - Deployment targets (required)
-    - These map to directories in the `output directory` (default ./deploy)
+    - These map to directories in the `output directory` of the GitOps repo
     - You can include directories explictly (i.e. "west" in the sample)
     - You can include a reference to json key(s) (i.e. "clusters" and "regions in the sample)
+    - The result of the included `autogitops.json` is
+      - west
+      - nyc3
+      - central
+      - east
   - The remaining fields are user defined
     - name - Kubernetes app and deployment name
     - namespace - Kubernetes namespace
     - imageName - Docker image name
     - imageTag - Docker image tag
+    - You can add additional fields
 
 ### Sample `autogitops.json` file
 
@@ -95,7 +107,7 @@ Options:
 ## Deployment Target Config
 
 - Each deployment target (directory in ./deploy) also contains a `config.json` file
-- These are values for one or more clusters that can be used by the templating engine
+- These are values for one or more clusters that are used by the templating engine
 - `environment` is required and maps to the template to use
 - You can define your own json fields
   - `zone` and `region` are examples of custom json fields
@@ -116,12 +128,13 @@ Options:
 
 - The `autogitops` folder contains template(s) that the CLI uses to generate the yaml
 - Each directory represents an `environment` that maps to the `environment` in the `Cluster config.json`
+  - This example contains the `pre-prod` environment / directory
 - Each directory contains one or more yaml `templates`
 - These files can contain `substitution parameters`
   - i.e. `{{gitops.name}}` or `{{gitops.config.zone}}`
   - The templating engine will replace with actual values
   - Reference the `cluster config` values with `{{gitops.config.yourKey}}`
-  - The templating engine will fail if it cannot find a referenced substitution value
+  - The templating engine will fail if it cannot find a substitution value for every parameter
 
 ### Example App Template
 
@@ -163,12 +176,23 @@ spec:
 
 ### Running on local files
 
+- This repo contains sample files that you can use for debugging
+
 ```bash
 
 # run AutoGitOps with --no-push
 ago --no-push
 
+# running with Docker
+# mount the current directory into the container
+docker run -it --rm \
+--name ago \
+-v $(pwd):/ago \
+ghcr.io/bartr/autogitops --no-push
+
 # check the changes to ./deploy
+# a "tiny" directory will be created for each "target"
+# "tiny" is from the namespace parameter
 git status
 
 ```
@@ -177,7 +201,7 @@ git status
 
 - AutoGitOps applied the template and updated the yaml in the GitOps repo
 - If this were a real repo
-  - `commit` and `push` the git changes
+  - `add` `commit` and `push` the changes to git
   - `GitOps` will automatically deploy the changes to each cluster
 
 ```text
@@ -207,17 +231,6 @@ cd ../run_autogitops
 
 # see what was changed
 git status
-
-```
-
-## Running with Docker and local output
-
-```bash
-
-docker run -it --rm \
---name ago \
--v $(pwd):/ago \
-ghcr.io/bartr/autogitops --no-push
 
 ```
 
@@ -253,9 +266,10 @@ docker rm -f ago
 
 ## Setting up Flux
 
-- Create a repo
+- Create a GitOps repo
 - Create the `deploy` tree
-- Add the repo and correct directory to each cluster
+- Add `config.json` to each directory
+- Add the repo and correct directory(s) to each cluster
   - Example
     - https://github.com/bartr/autogitops
     - /deploy/central
