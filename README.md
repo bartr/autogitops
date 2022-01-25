@@ -11,6 +11,8 @@
 
 ## Installation
 
+> If you have access to Codespaces, you can skip the installation
+
 ```bash
 
 # clone this repo
