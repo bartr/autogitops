@@ -211,6 +211,17 @@ git status
 
 ```
 
+## Running with Docker and local output
+
+```bash
+
+docker run -it --rm \
+--name ago \
+-v $(pwd):/ago \
+ghcr.io/bartr/autogitops --no-push
+
+```
+
 ## Running with Docker
 
 - The key to running with docker is to mount `autogitops` as a volume
@@ -238,17 +249,6 @@ docker exec -it ago bash
 
 # delete the container
 docker rm -f ago
-
-```
-
-## Running with Docker and local output
-
-```bash
-
-docker run -it --rm \
---name ago \
--v $(pwd):/ago \
-ghcr.io/bartr/autogitops --no-push
 
 ```
 
