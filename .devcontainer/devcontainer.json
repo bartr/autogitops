@@ -1,5 +1,5 @@
 {
-	"name": "BartR-Template",
+	"name": "AutoGitOps",
 	"dockerFile": "Dockerfile",
 
 	// do not change these if you want Docker in Docker support
@@ -16,18 +16,14 @@
 	},
 
 	"hostRequirements": {
-		"cpus": 4
+		"cpus": 2
 	},
 	
 	// forward ports for the app
-	"forwardPorts": [
-		30080
-	],
+	"forwardPorts": [],
 
 	// add labels
-	"portsAttributes": {
-		"30080": { "label": "WebAPI" }
-	},
+	"portsAttributes": {},
 
 	// Install extensions
 	"extensions": [
