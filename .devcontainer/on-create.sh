@@ -2,6 +2,10 @@
 
 echo "on-create start" >> $HOME/status
 
-# add your commands here
+# install AutoGitOps CLI
+dotnet tool install -g autogitops
+
+# pull docker image
+docker pull ghcr.io/bartr/autogitops
 
 echo "on-create complete" >> $HOME/status
