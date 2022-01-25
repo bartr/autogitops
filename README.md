@@ -141,8 +141,6 @@ spec:
     metadata:
       labels:
         app: {{gitops.name}}
-        version: beta-{{gitops.version}}
-        deploy: {{gitops.deploy}}
     spec:
       containers:
         - name: app
@@ -154,11 +152,6 @@ spec:
           - {{gitops.config.zone}}
           - --region
           - {{gitops.config.region}}
-
-          ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
 
 ```
 
