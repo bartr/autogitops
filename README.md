@@ -25,7 +25,7 @@ dotnet tool install -g autogitops
 ago -h
 
 # run from Docker
-docker run ghcr.io/bartr/autogitops -h
+docker run -it ghcr.io/bartr/autogitops -h
 
 ```
 
@@ -211,6 +211,49 @@ git status
 
 ```
 
+## Running with Docker
+
+- The key to running with docker is to mount `autogitops` as a volume
+
+```bash
+
+# start the container in an almost endless loop so we can easily check results
+# ago is the default entry point
+docker run -d \
+--name ago \
+-v $(pwd)/autogitops:/ago/autogitops \
+--entrypoint sleep \
+ghcr.io/bartr/autogitops 300d
+
+# execute ago in the container
+docker exec -it ago ago --no-push -r /bartr/autogitops
+
+# run git status in the container
+docker exec -it ago git -C /run_autogitops status
+
+# open a shell in the container (optional)
+# cd /run_autogitops to see the results
+# make sure to exit the shell
+docker exec -it ago bash
+
+# delete the container
+docker rm -f ago
+
+```
+
+## Running with Docker and local output
+
+> You can ignore the git repo errors
+
+```bash
+
+docker run -it --rm \
+--name ago \
+-v $(pwd):/ago \
+ghcr.io/bartr/autogitops --no-push
+
+```
+
 ## Setting up Flux
 
 - Create a repo
@@ -224,27 +267,31 @@ git status
 
 - Create and test your GitOps repo
 - Configure `autogitops` for each application
-- Run `ago` in your CI-CD
+- Run `ago` in your CI-CD for each application
 
 ```bash
 
 # install dotnet global tool
+# requires dotnet 5.x
 dotnet tool install -g autogitops
 
 # run AutoGitOps
 ago -r /bartr/autogitops -b main -u bartr -e bartr@outlook.com -p 123MyPAT456
 
 ```
-## Running with Docker
+
+## Running CI-CD with Docker
 
 - The key to running with docker is to mount `autogitops` as a volume
 
 ```bash
 
 # run from Docker
-docker run ghcr.io/bartr/autogitops \
--v $(pwd):/autogitops \
-ghcr.io/bartr/autogitops:latest
+docker run -it \
+--name ago \
+--rm \
+-v $(pwd)/autogitops:/ago/autogitops \
+ghcr.io/bartr/autogitops -r /bartr/autogitops -b main -u bartr -e bartr@outlook.com -p 123MyPAT456
 
 ```
 
