@@ -5,23 +5,18 @@
 
 > AutoGitOps is a CLI that generates GitOps deployment files for Kubernetes clusters
 
-## Overview
-
-`AutoGitOps` is packaged as a dotnet global tool and as a docker container
-
 ## Installation
 
 > If you have access to Codespaces, you can skip the installation
+
+- AutoGitOps is packaged as a Docker image
+  - `ghcr.io/bartr/autogitops:latest`
 
 ```bash
 
 # clone this repo
 git clone https://github.com/bartr/autogitops
 cd autogitops
-
-# install AutoGitOps dotnet tool
-# make sure that ~/.dotnet/tools is in your path
-dotnet tool install -g autogitops
 
 # pull docker container
 docker pull ghcr.io/bartr/autogitops:latest
@@ -32,10 +27,7 @@ docker pull ghcr.io/bartr/autogitops:latest
 
 ```bash
 
-# display help from dotnet global tool
-ago -h
-
-# display help from Docker
+# display help
 docker run -it ghcr.io/bartr/autogitops -h
 
 ```
@@ -181,10 +173,10 @@ spec:
 ```bash
 
 # run AutoGitOps with --no-push
-ago --no-push
-
-# running with Docker
 # mount the current directory into the container
+# this will use ./autogitops as the config
+# this will use ./deploy as the output directory
+
 docker run -it --rm \
 --name ago \
 -v $(pwd):/ago \
@@ -193,6 +185,7 @@ ghcr.io/bartr/autogitops --no-push
 # check the changes to ./deploy
 # a "tiny" directory will be created for each "target"
 # "tiny" is from the namespace parameter
+
 git status
 
 ```
@@ -215,26 +208,24 @@ Untracked files:
 
 ```
 
-## GitOps Repo
-
-- AutoGitOps is a templating engine that commits changes to a GitHub repo specified with the --ago-* parameters
-- If the default GitHub user does not have access to the repo, you must specify email, user and PAT parameters
-- The `--no-push` option will make the changes to the repo but will not push to GitHub - this is useful for testing
+## Clean up changes
 
 ```bash
 
-# run AutoGitOps with a sample repo
-ago --no-push -r /bartr/autogitops
-
-# change to the cloned repo
-cd ../run_autogitops
-
-# see what was changed
+git clean -fd
 git status
 
 ```
 
-## Running with Docker
+## GitOps Repo
+
+- AutoGitOps is a templating engine that commits changes to a GitHub repo specified with the --ago-* parameters
+- If the default GitHub user does not have access to the repo, you must specify the PAT parameter
+  - git user.name defaults to `autogitops`
+  - git user.email defaults to `autogitops@outlook.com`
+- The `--no-push` option will make the changes to the repo but will not push to GitHub - this is useful for testing
+
+## Running Locally
 
 - The key to running with docker is to mount `autogitops` as a volume
 
@@ -282,27 +273,12 @@ docker rm -f ago
 
 ```bash
 
-# install dotnet global tool
-# requires dotnet 5.x
-dotnet tool install -g autogitops
-
-# run AutoGitOps
-ago -r /bartr/autogitops -b main -u bartr -e bartr@outlook.com -p 123MyPAT456
-
-```
-
-## Running CI-CD with Docker
-
-- The key to running with docker is to mount `autogitops` as a volume
-
-```bash
-
-# run from Docker
+# run ago
 docker run -it \
 --name ago \
 --rm \
 -v $(pwd)/autogitops:/ago/autogitops \
-ghcr.io/bartr/autogitops -r /bartr/autogitops -b main -u bartr -e bartr@outlook.com -p 123MyPAT456
+ghcr.io/bartr/autogitops -r /bartr/autogitops -p 123MyPAT456
 
 ```
 
