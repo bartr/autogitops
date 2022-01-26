@@ -162,13 +162,11 @@ spec:
 
 ## Debugging
 
+> This repo contains sample files that you can use for debugging
+
 - You can debug using local files by specifying `--no-push`
 - Default `template directory` is `./autogitops`
 - Default `output directory` is `./deploy`
-
-### Running on local files
-
-- This repo contains sample files that you can use for debugging
 
 ```bash
 
