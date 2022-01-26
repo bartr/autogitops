@@ -272,7 +272,7 @@ docker rm -f ago
 ```bash
 
 # run ago
-docker run -it \
+docker run \
 --name ago \
 --rm \
 -v $(pwd)/autogitops:/ago/autogitops \
