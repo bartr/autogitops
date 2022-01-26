@@ -28,7 +28,7 @@ docker pull ghcr.io/bartr/autogitops:latest
 ```bash
 
 # display help
-docker run -it ghcr.io/bartr/autogitops -h
+docker run -it --rm ghcr.io/bartr/autogitops -h
 
 ```
 
