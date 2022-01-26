@@ -272,11 +272,13 @@ docker rm -f ago
 ```bash
 
 # run ago
+# change the repo and PAT parameters
+# Note - this will fail on the git push because the PAT is invalid
 docker run \
 --name ago \
 --rm \
 -v $(pwd)/autogitops:/ago/autogitops \
-ghcr.io/bartr/autogitops -r /bartr/autogitops -p 123MyPAT456
+ghcr.io/bartr/autogitops -r /bartr/autogitops -p Replace-Repo-and-PAT-with-your-values
 
 ```
 
