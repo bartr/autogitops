@@ -5,30 +5,24 @@
 
 > AutoGitOps is a CLI that generates GitOps deployment files for Kubernetes clusters
 
-## Installation
-
-> If you have access to Codespaces, you can skip the installation
-
 - AutoGitOps is packaged as a Docker image
   - `ghcr.io/bartr/autogitops:latest`
+  - `ghcr.io/bartr/autogitops:beta`
 
-```bash
+> This readme uses the :beta version for testing
 
-# clone this repo
-git clone https://github.com/bartr/autogitops
-cd autogitops
+## Open in Codespaces
 
-# pull docker container
-docker pull ghcr.io/bartr/autogitops:latest
-
-```
+- Open this repo in Codespaces
+  - Click `Code`
+  - Create new Codespace
 
 ### Usage
 
 ```bash
 
 # display help
-docker run -it --rm ghcr.io/bartr/autogitops -h
+docker run -it --rm ghcr.io/bartr/autogitops:beta -h
 
 ```
 
@@ -46,7 +40,7 @@ Options:
   -p, --ago-pat                  GitHub Personal Access Token
   -r, --ago-repo                 GitOps Repo (i.e. /bartr/auto-gitops)
   -b, --ago-branch               GitOps branch [default: main]
-  -t, --template-dir             Template directory [default: autogitops]
+  -c, --container-version <container-version>  Container version number [default: yy-mm-dd-yy-mm-ss]
   -o, --output                   Output directory [default: deploy]
   --no-push                      Don't push changes to repo
   -d, --dry-run                  Validates and displays configuration
@@ -58,60 +52,77 @@ Options:
 ## Configuration
 
 > The `autogitops` folder should be in the application repo(s)
+>
+> The `autogitops` and `deploy` folders are included here for ease of evaluating
 
 - AutoGitOps uses a config file to control the templating engine
-  - The default location is `./autogitops/autogitops.json`
-  - The location can be changed with `--template-dir`
+  - The location is `./autogitops/autogitops.json`
+    - Note: each application will have a unique autogitops.json file
 
 - Json Fields
+  - name - Kubernetes app and deployment name (required)
+  - namespace - Kubernetes namespace (required)
   - targets - Deployment targets (required)
-    - These map to directories in the `output directory` of the GitOps repo
-    - You can include directories explictly (i.e. "west" in the sample)
-    - You can include a reference to json key(s) (i.e. "clusters" and "regions in the sample)
-    - The result of the included `autogitops.json` is
-      - west
-      - nyc3
-      - central
-      - east
+    - The values map to one of three options
+      - Clusters (directories) in the `output directory` of the GitOps repo
+      - "all" - keyword to deploy to all clusters (directories)
+      - "key:value" - AGO will check each cluster's config.json file for a match
+        - you can use simple values or arrays in the config.json
+          - "region": "central"
+          - "tags": [ "red", "blue", "green" ]
+          - complex objects are not supported
+  - targetDir - the target directory for this app
+    - this is appended to the output directory (default: deploy)
+    - in our example, heartbeat will be deployed to the `deploy/bootstrap` directory
+    - we recommend you have at least 2 directories - bootstrap and apps in our case
+      - you may want to add directories by "app suite" and/or "app team"
   - The remaining fields are user defined
-    - name - Kubernetes app and deployment name
-    - namespace - Kubernetes namespace
     - imageName - Docker image name
     - imageTag - Docker image tag
-    - You can add additional fields
+    - You can add additional fields for use in the templating engine
 
 ### Sample `autogitops.json` file
 
 ```json
 
 {
-  "targets": [ "clusters", "regions", "west" ],
-  "clusters": [ "nyc3" ],
-  "regions": [ "central", "east" ],
-  "name": "tinybench",
-  "namespace": "tiny",
-  "imageName": "ghcr.io/cse-labs/tinybench",
-  "imageTag": "latest"
+  // required
+  "name": "heartbeat",
+  "namespace": "heartbeat",
+  "targets": [ "region:central" ],
+
+  // reserved
+  "targetDir": "bootstrap",
+
+  // user defined
+  "imageName": "ghcr.io/bartr/heartbeat",
+  "imageTag": "latest",
+  "author": "bartr",
+  "foo": "bar"
 }
 
 ```
 
 ## Deployment Target Config
 
-- Each deployment target (directory in ./deploy) also contains a `config.json` file
-- These are values for one or more clusters that are used by the templating engine
+- Each deployment target (directory in ./deploy/[apps | bootstrap]) also contains a `config.json` file
+- Each directory maps to one cluster and can contain cluster specific infomation such as `store`
 - `environment` is required and maps to the template to use
 - You can define your own json fields
-  - `zone` and `region` are examples of custom json fields
+  - `zone` `region` `store` are examples of custom json fields
 
 ### Sample Cluster Config
 
 ```json
 
 {
-  "environment": "pre-prod",
-  "zone": "az-centralus",
-  "region": "Central"
+  // required
+  "environment": "dev",
+
+  // user defined
+  "zone": "az-southcentral",
+  "region": "central",
+  "store": "central-tx-atx-101"
 }
 
 ```
@@ -120,13 +131,13 @@ Options:
 
 - The `autogitops` folder contains template(s) that the CLI uses to generate the yaml
 - Each directory represents an `environment` that maps to the `environment` in the `Cluster config.json`
-  - This example contains the `pre-prod` environment / directory
+  - This example contains the `dev` environment
 - Each directory contains one or more yaml `templates`
 - These files can contain `substitution parameters`
-  - i.e. `{{gitops.name}}` or `{{gitops.config.zone}}`
-  - The templating engine will replace with actual values
-  - Reference the `cluster config` values with `{{gitops.config.yourKey}}`
-  - The templating engine will fail if it cannot find a substitution value for every parameter
+  - i.e. `{{gitops.name}}` - application value
+  - i.e. `{{gitops.config.zone}}` - cluster value (gitops.config.*)
+  - The templating engine will replace with actual values for each cluster
+  - The templating engine will fail if it cannot find a substitution value for every parameter in the template(s)
 
 ### Example App Template
 
@@ -152,7 +163,7 @@ spec:
           image: {{gitops.imageName}}:{{gitops.imageTag}}
           imagePullPolicy: Always
 
-          args: 
+          args:
           - --zone
           - {{gitops.config.zone}}
           - --region
@@ -164,25 +175,23 @@ spec:
 
 > This repo contains sample files that you can use for debugging
 
-- You can debug using local files by specifying `--no-push`
-- Default `template directory` is `./autogitops`
+- You can debug by specifying `--no-push`
+  - This will allow you to see the changes without updating the repo
 - Default `output directory` is `./deploy`
+  - `targetDir` is set to `bootstrap` in the heartbeat app
+    - the results will show up in `./deploy/bootstrap/atx-101`
 
 ```bash
 
 # run AutoGitOps with --no-push
 # mount the current directory into the container
-# this will use ./autogitops as the config
-# this will use ./deploy as the output directory
 
 docker run -it --rm \
---name ago \
 -v $(pwd):/ago \
-ghcr.io/bartr/autogitops --no-push
+ghcr.io/bartr/autogitops:beta --no-push
 
-# check the changes to ./deploy
-# a "tiny" directory will be created for each "target"
-# "tiny" is from the namespace parameter
+# check the changes to ./deploy/bootstrap
+# a "heartbeat" directory will be created for the atx-101 cluster
 
 git status
 
@@ -193,7 +202,7 @@ git status
 - AutoGitOps applied the template and updated the yaml in the GitOps repo
 - If this were a real repo
   - `add` `commit` and `push` the changes to git
-  - `GitOps` will automatically deploy the changes to each cluster
+  - `GitOps` will automatically pull the changes to each cluster
 
 ```text
 
@@ -225,7 +234,7 @@ git status
 
 ## Running Locally
 
-- The key to running with docker is to mount `autogitops` as a volume
+- The key to running with docker is to mount the current directory as a volume
 
 ```bash
 
@@ -233,7 +242,7 @@ git status
 # ago is the default entry point
 docker run -d \
 --name ago \
--v $(pwd)/autogitops:/ago/autogitops \
+-v $(pwd):/ago \
 --entrypoint sleep \
 ghcr.io/bartr/autogitops 300d
 
@@ -261,7 +270,7 @@ docker rm -f ago
 - Add the repo and correct directory(s) to each cluster
   - Example
     - https://github.com/bartr/autogitops
-    - /deploy/central
+    - /deploy/bootstrap
 
 ## Running via CI-CD
 
@@ -277,8 +286,8 @@ docker rm -f ago
 docker run \
 --name ago \
 --rm \
--v $(pwd)/autogitops:/ago/autogitops \
-ghcr.io/bartr/autogitops -r /bartr/autogitops -p Replace-Repo-and-PAT-with-your-values
+-v $(pwd):/ago \
+ghcr.io/bartr/autogitops:beta -r yourOrg/yourRepo -p yourPAT
 
 ```
 
