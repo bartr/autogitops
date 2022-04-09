@@ -6,8 +6,8 @@
 > AutoGitOps is a CLI that generates GitOps deployment files for Kubernetes clusters
 
 - AutoGitOps is packaged as a Docker image
-  - `ghcr.io/bartr/autogitops:latest`
-  - `ghcr.io/bartr/autogitops:beta`
+  - docker pull ghcr.io/bartr/autogitops:latest
+  - docker pull ghcr.io/bartr/autogitops:beta
 
 > This readme uses the :beta version for testing
 
@@ -15,7 +15,7 @@
 
 - Open this repo in Codespaces
   - Click `Code`
-  - Create new Codespace
+    - Click `Create new Codespace`
 
 ### Usage
 
@@ -131,7 +131,7 @@ Options:
 
 - The `autogitops` folder contains template(s) that the CLI uses to generate the yaml
 - Each directory represents an `environment` that maps to the `environment` in the `Cluster config.json`
-  - This example contains the `dev` environment
+  - This example uses the `dev` environment
 - Each directory contains one or more yaml `templates`
 - These files can contain `substitution parameters`
   - i.e. `{{gitops.name}}` - application value
