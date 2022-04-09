@@ -1,4 +1,4 @@
-# AutoGitOps CLI
+# Auto Git Ops
 
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
@@ -8,14 +8,31 @@
 - AutoGitOps is packaged as a Docker image
   - docker pull ghcr.io/bartr/autogitops:latest
   - docker pull ghcr.io/bartr/autogitops:beta
+- AutoGitOps is mainly used in CI-CD pipelines (for CD)
+- AutoGitOps is a `templating engine` that combines values from
+  - Application config
+  - Application template(s) (yaml files)
+  - Cluster config
+- AutoGitOps allows you to deploy to multiple clusters in your fleet
+  - `Targets` are stored in each application config
+  - `meta data` is stored in each cluster config
+  - AutoGitops combines the config files and templates for each matching cluster
+- Any error while applying the templates and the entire attempt is aborted
+  - No partial updates
 
 > This readme uses the :beta version for testing
+>
+> Version 0.4.0 has several breaking changes
 
 ## Open in Codespaces
 
 - Open this repo in Codespaces
   - Click `Code`
     - Click `Create new Codespace`
+- If you don't have access to Codespaces
+  - I'm sorry :( - Codespaces is `AMAZING`
+  - Any dev machine with Docker installed should work
+  - But is not tested
 
 ### Usage
 
@@ -55,7 +72,7 @@ Options:
 >
 > The `autogitops` and `deploy` folders are included here for ease of evaluating
 
-- AutoGitOps uses a config file to control the templating engine
+- AutoGitOps uses config files to control the templating engine
   - The location is `./autogitops/autogitops.json`
     - Note: each application will have a unique autogitops.json file
 
@@ -238,7 +255,7 @@ ghcr.io/bartr/autogitops:beta --no-push
 
 ```
 
-## Clean up changes
+## Clean Up
 
 ```bash
 
