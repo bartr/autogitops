@@ -208,10 +208,7 @@ git status
 
 Untracked files:
   (use "git add <file>..." to include in what will be committed)
-        deploy/central/tiny/
-        deploy/east/tiny/
-        deploy/nyc3/tiny/
-        deploy/west/tiny/
+        deploy/bootstrap/atx-101/heartbeat/
 
 ```
 
