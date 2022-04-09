@@ -221,6 +221,32 @@ git status
 
 ```
 
+## Change the Targets
+
+- Open `autogitops/autogitops.json`
+- change
+  - "targets": [ "region:central" ]
+- to
+  - "targets": [ "all" ]
+- Run `AutoGitOps`
+
+```bash
+
+docker run -it --rm \
+-v $PWD:/ago \
+ghcr.io/bartr/autogitops:beta --no-push
+
+```
+
+## Clean up changes
+
+```bash
+
+git clean -fd
+git status
+
+```
+
 ## GitOps Repo
 
 - AutoGitOps is a templating engine that commits changes to a GitHub repo specified with the --ago-* parameters
@@ -241,7 +267,7 @@ docker run -d \
 --name ago \
 -v $PWD:/ago \
 --entrypoint sleep \
-ghcr.io/bartr/autogitops 300d
+ghcr.io/bartr/autogitops:beta 300d
 
 # execute ago in the container
 # --repo (-r) is the org/name of your GitHub repo
@@ -252,10 +278,8 @@ docker exec -it ago ago --no-push -r /bartr/autogitops
 # the --repo gets cloned to /run_autogitops inside the container
 docker exec -it ago git -C /run_autogitops status
 
-# open a shell in the container (optional)
-# cd /run_autogitops to see the results
-# make sure to exit the shell
-docker exec -it ago bash
+# run git status in the container
+docker exec -it ago git -C /run_autogitops status
 
 # delete the container
 docker rm -f ago
