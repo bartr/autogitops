@@ -36,45 +36,50 @@
 
 ### Usage
 
+- From your terminal
+
 ```bash
 
 # display help
-docker run -it --rm ghcr.io/bartr/autogitops:beta -h
+docker run --rm ghcr.io/bartr/autogitops:beta -h
 
 ```
 
-```text
+- Output
 
-AutoGitOps
-  Generate GitOps files for Flux
+  ```text
 
-Usage:
-  ago [options]
+  AutoGitOps
+    Generate GitOps files for Flux
 
-Options:
-  -u, --ago-user                 GitHub User Name
-  -e, --ago-email                GitHub Email
-  -p, --ago-pat                  GitHub Personal Access Token
-  -r, --ago-repo                 GitOps Repo (i.e. /bartr/auto-gitops)
-  -b, --ago-branch               GitOps branch [default: main]
-  -c, --container-version <container-version>  Container version number [default: yy-mm-dd-yy-mm-ss]
-  -o, --output                   Output directory [default: deploy]
-  --no-push                      Don't push changes to repo
-  -d, --dry-run                  Validates and displays configuration
-  --version                      Show version information
-  -h, --help                     Show help and usage information
+  Usage:
+    ago [options]
 
-```
+  Options:
+    -u, --ago-user                 GitHub User Name
+    -e, --ago-email                GitHub Email
+    -p, --ago-pat                  GitHub Personal Access Token
+    -r, --ago-repo                 GitOps Repo (i.e. /bartr/auto-gitops)
+    -b, --ago-branch               GitOps branch [default: main]
+    -c, --container-version <container-version>  Container version number [default: yy-mm-dd-yy-mm-ss]
+    -o, --output                   Output directory [default: deploy]
+    --no-push                      Don't push changes to repo
+    -d, --dry-run                  Validates and displays configuration
+    --version                      Show version information
+    -h, --help                     Show help and usage information
+
+  ```
 
 ## Configuration
 
-> The `autogitops` folder should be in the application repo(s)
+> The `autogitops` folder must be in each application repo
 >
 > The `autogitops` and `deploy` folders are included here for ease of evaluating
 
 - AutoGitOps uses config files to control the templating engine
   - The location is `./autogitops/autogitops.json`
     - Note: each application will have a unique autogitops.json file
+    - Note: each cluster will have a unique config.json file
 
 - Json Fields
   - name - Kubernetes app and deployment name (required)
@@ -88,7 +93,7 @@ Options:
           - "region": "central"
           - "tags": [ "red", "blue", "green" ]
           - complex objects are not supported
-  - targetDir - the target directory for this app
+  - targetDir - the target directory for this app (reserved)
     - this is appended to the output directory (default: deploy)
     - in our example, heartbeat will be deployed to the `deploy/bootstrap` directory
     - we recommend you have at least 2 directories - bootstrap and apps in our case
@@ -106,16 +111,24 @@ Options:
   // required
   "name": "heartbeat",
   "namespace": "heartbeat",
-  "targets": [ "region:central" ],
+
+  // specific cluster, metadata match
+  "targets": [ "atx-101", "region:central" ],
+
+  // all clusters
+  // you cannot combine all - it must be the only target
+  // "targets": [ "all" ],
 
   // reserved
+  // in our example, bootstrap or apps
   "targetDir": "bootstrap",
+  // "targetDir": "apps",
 
   // user defined
   "imageName": "ghcr.io/bartr/heartbeat",
   "imageTag": "latest",
   "author": "bartr",
-  "foo": "bar"
+  "args": [ "--server", "my-server" ]
 }
 
 ```
@@ -139,7 +152,8 @@ Options:
   // user defined
   "zone": "az-southcentral",
   "region": "central",
-  "store": "central-tx-atx-101"
+  "store": "central-tx-atx-101",
+  "tags:": [ "red", "blue", "green" ]
 }
 
 ```
@@ -194,6 +208,7 @@ spec:
 
 - You can debug by specifying `--no-push`
   - This will allow you to see the changes without updating the repo
+    - If you fork the repo, you can update
 - Default `output directory` is `./deploy`
   - `targetDir` is set to `bootstrap` in the heartbeat app
     - the results will show up in `./deploy/bootstrap/atx-101`
@@ -202,7 +217,6 @@ spec:
 
 # run AutoGitOps with --no-push
 # mount the current directory into the container
-
 docker run -it --rm \
 -v $PWD:/ago \
 ghcr.io/bartr/autogitops:beta --no-push
@@ -221,13 +235,13 @@ git status
   - `add` `commit` and `push` the changes to git
   - `GitOps` will automatically pull the changes to each cluster
 
-```text
+    ```text
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-        deploy/bootstrap/atx-101/heartbeat/
+    Untracked files:
+      (use "git add <file>..." to include in what will be committed)
+            deploy/bootstrap/atx-101/heartbeat/
 
-```
+    ```
 
 ## Clean up changes
 
@@ -247,13 +261,13 @@ git status
   - "targets": [ "all" ]
 - Run `AutoGitOps`
 
-```bash
+  ```bash
 
-docker run -it --rm \
--v $PWD:/ago \
-ghcr.io/bartr/autogitops:beta --no-push
+  docker run -it --rm \
+  -v $PWD:/ago \
+  ghcr.io/bartr/autogitops:beta --no-push
 
-```
+  ```
 
 ## Clean Up
 
@@ -264,17 +278,18 @@ git status
 
 ```
 
-## GitOps Repo
+## Using a GitOps Repo
 
-- AutoGitOps is a templating engine that commits changes to a GitHub repo specified with the --ago-* parameters
-- If the default GitHub user does not have access to the repo, you must specify the PAT parameter
+- The `--no-push` option will make the changes to the repo but will not push to GitHub - this is useful for testing
+- You must specify the PAT parameter to push
   - git user.name defaults to `autogitops`
   - git user.email defaults to `autogitops@outlook.com`
-- The `--no-push` option will make the changes to the repo but will not push to GitHub - this is useful for testing
 
 ## Running Locally
 
-- The key to running with docker is to mount the current directory as a volume
+- You must mount a directory as a volume
+  - `/ago` is an empty directory in the container
+  - `/deploy` is an empty directory in the container
 
 ```bash
 
@@ -295,9 +310,6 @@ docker exec -it ago ago --no-push -r /bartr/autogitops
 # the --repo gets cloned to /run_autogitops inside the container
 docker exec -it ago git -C /run_autogitops status
 
-# run git status in the container
-docker exec -it ago git -C /run_autogitops status
-
 # delete the container
 docker rm -f ago
 
@@ -311,7 +323,8 @@ docker rm -f ago
 - Create `deploy/bootstrap` tree
 - Create `deploy/apps` tree
   - Create a directory per cluster in each tree
-  - Add `config.json` to each directory in both trees
+    - Add `config.json` to each directory in both trees
+- We automate this as part of our cluster bootstrap
 
 ## Setting up Flux
 
@@ -387,6 +400,8 @@ docker rm -f ago
 # run autogtiops
 # change the repo and PAT parameters
 # Note - this will fail on the git push if the PAT is invalid
+# We use a GitHub org secret for our github PAT
+#  ${{ secrets.GHCR_PAT }}
 docker run --rm \
 -v $(pwd):/ago \
 ghcr.io/bartr/autogitops:beta \
@@ -423,7 +438,7 @@ jobs:
         -v $(pwd):/ago \
         ghcr.io/bartr/autogitops:beta \
         -r yourOrg/yourRepo \
-        -p yourPAT
+        -p ${{ secrets.GHCR_PAT }}
 
 ```
 
