@@ -1,9 +1,7 @@
 {
-  "name": "tinybench",
-  "namespace": "tiny",
-  "imageName": "ghcr.io/cse-labs/tinybench",
+  "name": "heartbeat",
+  "namespace": "heartbeat",
+  "imageName": "ghcr.io/bartr/heartbeat",
   "imageTag": "latest",
-  "targets": [ "clusters", "regions", "west" ],
-  "clusters": [ "nyc3" ],
-  "regions": [ "central", "east" ]
+  "targets": [ "region:west" ]
 }
