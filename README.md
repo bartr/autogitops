@@ -334,20 +334,50 @@ docker rm -f ago
 
 ## Running via CI-CD
 
-- Create and test your GitOps repo
+- Create and test your app(s) and GitOps repo locally
 - Configure `autogitops` for each application
-- Run `ago` in your CI-CD for each application
+- Run `AutoGitOps` in your CI-CD for each application
 
 ```bash
 
-# run ago
+# run autogtiops
 # change the repo and PAT parameters
-# Note - this will fail on the git push because the PAT is invalid
-docker run \
---name ago \
---rm \
+# Note - this will fail on the git push if the PAT is invalid
+docker run --rm \
 -v $(pwd):/ago \
 ghcr.io/bartr/autogitops:beta -r yourOrg/yourRepo -p yourPAT
+
+```
+
+## Sample GitHub Action
+
+```yaml
+
+name: AutoGitOps
+
+on:
+  push:
+    paths:
+    - 'your paths'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Docker pull
+      run: |
+        docker pull ghcr.io/bartr/autogitops:beta
+
+    - name: GitOps Deploy
+      run: |
+        docker run --rm \
+        -v $(pwd):/ago \
+        ghcr.io/bartr/autogitops:beta \
+        -r bartr/autogitops \
+        -p yourPAT
 
 ```
 
