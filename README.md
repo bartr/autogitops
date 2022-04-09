@@ -286,7 +286,9 @@ docker rm -f ago
 
 ```
 
-## Creating your GitOps Repo
+## Creating a GitOps Repo
+
+> The easiest way is to copy this repo
 
 - Create a repo
 - Create `deploy/bootstrap` tree
@@ -311,6 +313,7 @@ docker rm -f ago
 ### Sample Flux Setup Commands
 
 - Update the export commands with your values
+  - Flux pushes to the repo during bootstrap, so your PAT has to have push permissions
 
   ```bash
 
@@ -369,7 +372,9 @@ docker rm -f ago
 # Note - this will fail on the git push if the PAT is invalid
 docker run --rm \
 -v $(pwd):/ago \
-ghcr.io/bartr/autogitops:beta -r yourOrg/yourRepo -p yourPAT
+ghcr.io/bartr/autogitops:beta \
+-r yourOrg/yourRepo \
+-p yourPAT
 
 ```
 
@@ -400,7 +405,7 @@ jobs:
         docker run --rm \
         -v $(pwd):/ago \
         ghcr.io/bartr/autogitops:beta \
-        -r bartr/autogitops \
+        -r yourOrg/yourRepo \
         -p yourPAT
 
 ```
