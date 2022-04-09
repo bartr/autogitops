@@ -187,7 +187,7 @@ spec:
 # mount the current directory into the container
 
 docker run -it --rm \
--v $(pwd):/ago \
+-v $PWD:/ago \
 ghcr.io/bartr/autogitops:beta --no-push
 
 # check the changes to ./deploy/bootstrap
