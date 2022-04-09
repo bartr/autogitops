@@ -239,14 +239,17 @@ git status
 # ago is the default entry point
 docker run -d \
 --name ago \
--v $(pwd):/ago \
+-v $PWD:/ago \
 --entrypoint sleep \
 ghcr.io/bartr/autogitops 300d
 
 # execute ago in the container
+# --repo (-r) is the org/name of your GitHub repo
+#   use a full https address for non-GitHub repos
 docker exec -it ago ago --no-push -r /bartr/autogitops
 
 # run git status in the container
+# the --repo gets cloned to /run_autogitops inside the container
 docker exec -it ago git -C /run_autogitops status
 
 # open a shell in the container (optional)
@@ -259,15 +262,75 @@ docker rm -f ago
 
 ```
 
+## Creating your GitOps Repo
+
+- Create a repo
+- Create `deploy/bootstrap` tree
+- Create `deploy/apps` tree
+  - Create a directory per cluster in each tree
+  - Add `config.json` to each directory in both trees
+
 ## Setting up Flux
 
-- Create a GitOps repo
-- Create the `deploy` tree
-- Add `config.json` to each directory
-- Add the repo and correct directory(s) to each cluster
-  - Example
-    - https://github.com/bartr/autogitops
-    - /deploy/bootstrap
+- Make sure flux has access to your repo(s)
+- Run `flux bootstrap`
+  - specify your repo
+  - path = /deploy/bootstrap/clusterDirectory
+- Create a `flux git source`
+  - specify your repo
+  - specify your branch (default: main)
+  - path = /deploy/apps/clusterDirectory
+- Create two `flux kustomization`
+  - one for bootstrap
+  - one for apps
+
+### Sample Flux Setup Commands
+
+- Update the export commands with your values
+
+  ```bash
+
+  # update with your values
+  export MY_REPO="bartr/autogitops"
+  export MY_CLUSTER="atx-101"
+  export MY_BRANCH="main"
+  export MY_PAT="my Personal Access Token"
+
+  # bootstrap the cluster
+  flux bootstrap git \
+    --url "https://github.com/$MY_REPO" \
+    --branch "$MY_BRANCH" \
+    --password "$MY_PAT" \
+    --token-auth true \
+    --path "./deploy/bootstrap/$MY_CLUSTER"
+
+  # create a git source
+  flux create source git gitops \
+    --url "https://github.com/$MY_REPO" \
+    --branch "$MY_BRANCH" \
+    --password "$MY_PAT" \
+
+  # create the bootstrap kustomization (or helm)
+  flux create kustomization bootstrap \
+    --source GitRepository/gitops \
+    --path "./deploy/bootstrap/$MY_CLUSTER" \
+    --prune true \
+    --interval 1m
+
+  # create the apps kustomization (or helm)
+  flux create kustomization apps \
+    --source GitRepository/gitops \
+    --path "./deploy/apps/$MY_CLUSTER" \
+    --prune true \
+    --interval 1m
+
+  # force flux to reconcile (sync) with the GitOps repo
+  flux reconcile source git gitops
+
+  # check your results
+  kubectl get pods -A
+
+  ```
 
 ## Running via CI-CD
 
