@@ -4,5 +4,5 @@
   "imageName": "ghcr.io/bartr/heartbeat",
   "imageTag": "latest",
   "targetDir": "bootstrap",
-  "targets": [ "region:west" ]
+  "targets": [ "region:central" ]
 }

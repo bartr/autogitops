@@ -1,5 +1,6 @@
 {
+  "environment": "dev",
   "zone": "az-southcentral",
   "region": "central",
-  "environment": "dev"
+  "store": "central-tx-atx-101"
 }

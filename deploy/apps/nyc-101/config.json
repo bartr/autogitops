@@ -1,5 +1,6 @@
 {
+  "environment": "dev",
   "zone": "az-eastus2",
   "region": "east",
-  "environment": "dev"
+  "store": "east-ny-nyc-101"
 }
